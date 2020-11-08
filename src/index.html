@@ -3,10 +3,12 @@
 
 <head>
     <meta charset='utf-8' />
-    <title>Display a map</title>
+    <title>United States 2020 Presidential Election Results</title>
     <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
-    <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v1.1.1/mapbox-gl.js'></script>
-    <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v1.1.1/mapbox-gl.css' rel='stylesheet' />
+    <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v1.6.1/mapbox-gl.js'></script>
+    <script src="https://d3js.org/d3-dsv.v1.min.js"></script>
+    <script src="https://d3js.org/d3-scale.v3.min.js"></script>
+    <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v1.6.1/mapbox-gl.css' rel='stylesheet' />
     <style>
         body {
             margin: 0;
@@ -26,20 +28,68 @@
 
     <div id='map'></div>
     <script>
-        var bounds = [
-            [-172, 5], // Southwest coordinates
-            [-63, 72] // Northeast coordinates
+        const blueScale = d3.scaleLinear()
+            .domain([0, 100])
+            .range(['#bad2f0', '#1868d1']);
+
+        const redScale = d3.scaleLinear()
+            .domain([0, 100])
+            .range(['#f2cbcb', '#be2d1e']);
+
+        const bounds = [
+            [-36.1, -17.5], // Southwest coordinates
+            [36.1, 17.5] // Northeast coordinates
         ];
 
-        mapboxgl.accessToken =
-            'pk.eyJ1Ijoic3BtY2dvdmVybiIsImEiOiJjanlob2p2ZGUwMXN6M21qeDVkNmxnMTkwIn0.FhoiR5GNnP40zrTEg-tNmQ';
-        var map = new mapboxgl.Map({
+        const mapboxAPI = {
+            accessToken: 'pk.eyJ1IjoidG9ubWNnIiwiYSI6ImNqbXkxejJ3eTBobGozbGxsb2pyOWpnNnAifQ.ntdNONqz-JFAmHrBFOSNTA',
+            style: 'mapbox://styles/tonmcg/ckh7upczt0tof19mger0hpp2q', // stylesheet location,
+            tilesetUrl: 'mapbox://tonmcg.4me4ohy9'
+
+        }
+
+        mapboxgl.accessToken = mapboxAPI.accessToken;
+        const map = new mapboxgl.Map({
             container: 'map', // container id
-            style: 'mapbox://styles/spmcgovern/cjyimxdu50qsz1cmovcatcpjd', // stylesheet location
-            center: [-74.50, 40], // starting position [lng, lat]
-            zoom: 14, // starting zoom
+            style: mapboxAPI.style,
+            center: [0.248036, -2.506671], // starting position [lng, lat]
+            zoom: 3.0, // starting zoom
             maxBounds: bounds // sets map boundaries
         });
+
+        async function getData() {
+            return await fetch(
+                "https://raw.githubusercontent.com/tonmcg/US_County_Level_Election_Results_08-20/master/2020_US_County_Level_Presidential_Results.csv", {
+                    "headers": {
+                        "Accept": "text/html",
+                    },
+                    "method": "GET"
+                }).then((resp) => resp.ok ? resp.text() : Promise.reject(resp.status)).then((text) => d3
+                .csvParse(text));
+        }
+
+        const data = getData();
+
+        // map.on('load', () => {
+        //     initLayers();
+        // });
+
+        // function initLayers() {
+        //     map.addSource('counties', {
+        //         'type': 'vector',
+        //         'url': mapboxAPI.tilesetUrl
+        //     });
+
+        //     map.addLayer({
+        //         'id': 'geoid',
+        //         'type': 'fill',
+        //         'source': 'counties',
+        //         'source-layer': 'cb_2019_us_county_20m_albers-4drc7v',
+        //         'paint': {
+        //             'fill-color': ['feature-state', 'color']
+        //         }
+        //     });
+        // }
     </script>
 
 </body>
